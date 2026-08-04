@@ -15,10 +15,12 @@
             @endif
 
             <div class="mb-4 flex gap-2">
+                @if ($character->canEdit(auth()->user()))
                 <a href="{{ route('characters.language-proficiencies.create', $character) }}"
                    class="rounded bg-amber-700 px-4 py-2 text-white hover:bg-amber-800">
                     Novo Registro
                 </a>
+                @endif
 
                 <a href="{{ route('characters.show', $character) }}"
                    class="rounded bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400">
@@ -43,6 +45,7 @@
                             @endif
                         </div>
 
+                        @if ($character->canEdit(auth()->user()))
                         <div class="flex gap-2">
                             <a href="{{ route('characters.language-proficiencies.edit', [$character, $record]) }}"
                                class="text-yellow-600 hover:underline">
@@ -60,6 +63,7 @@
                                 </button>
                             </form>
                         </div>
+                        @endif
                     </div>
                 @empty
                     <p class="text-gray-600">

@@ -5,29 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use App\Models\CharacterWeapon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CharacterWeaponController extends Controller
 {
-    public function index(Character $character)
+    public function index(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canView($request->user()), 403);
 
         $weapons = $character->weapons()->latest()->get();
 
         return view('character_weapons.index', compact('character', 'weapons'));
     }
 
-    public function create(Character $character)
+    public function create(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
 
         return view('character_weapons.create', compact('character'));
     }
 
     public function store(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -49,9 +48,9 @@ class CharacterWeaponController extends Controller
             ->with('success', 'Arma adicionada com sucesso!');
     }
 
-    public function edit(Character $character, CharacterWeapon $weapon)
+    public function edit(Request $request, Character $character, CharacterWeapon $weapon)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
         $this->authorizeWeapon($character, $weapon);
 
         return view('character_weapons.edit', compact('character', 'weapon'));
@@ -59,7 +58,7 @@ class CharacterWeaponController extends Controller
 
     public function update(Request $request, Character $character, CharacterWeapon $weapon)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
         $this->authorizeWeapon($character, $weapon);
 
         $validated = $request->validate([
@@ -82,9 +81,9 @@ class CharacterWeaponController extends Controller
             ->with('success', 'Arma atualizada com sucesso!');
     }
 
-    public function destroy(Character $character, CharacterWeapon $weapon)
+    public function destroy(Request $request, Character $character, CharacterWeapon $weapon)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
         $this->authorizeWeapon($character, $weapon);
 
         $weapon->delete();
@@ -103,11 +102,6 @@ class CharacterWeaponController extends Controller
         }
 
         return $bonus;
-    }
-
-    private function authorizeCharacter(Character $character): void
-    {
-        abort_if($character->user_id !== Auth::id(), 403);
     }
 
     private function authorizeWeapon(Character $character, CharacterWeapon $weapon): void

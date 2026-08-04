@@ -5,29 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use App\Models\CharacterItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CharacterItemController extends Controller
 {
-    public function index(Character $character)
+    public function index(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless(
+            $character->canView($request->user()),
+            403
+        );
 
-        $items = $character->items()->latest()->get();
+        $items = $character->items()
+            ->latest()
+            ->get();
 
         return view('character_items.index', compact('character', 'items'));
     }
 
-    public function create(Character $character)
+    public function create(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         return view('character_items.create', compact('character'));
     }
 
     public function store(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -43,18 +53,35 @@ class CharacterItemController extends Controller
             ->with('success', 'Item adicionado com sucesso!');
     }
 
-    public function edit(Character $character, CharacterItem $item)
-    {
-        $this->authorizeCharacter($character);
-        $this->authorizeItem($character, $item);
+    public function edit(
+        Request $request,
+        Character $character,
+        CharacterItem $item
+    ) {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
+
+        abort_unless(
+            $item->character_id === $character->id,
+            404
+        );
 
         return view('character_items.edit', compact('character', 'item'));
     }
 
     public function update(Request $request, Character $character, CharacterItem $item)
     {
-        $this->authorizeCharacter($character);
-        $this->authorizeItem($character, $item);
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
+
+        abort_unless(
+            $item->character_id === $character->id,
+            404
+        );
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -70,10 +97,17 @@ class CharacterItemController extends Controller
             ->with('success', 'Item atualizado com sucesso!');
     }
 
-    public function destroy(Character $character, CharacterItem $item)
+    public function destroy(Request $request, Character $character, CharacterItem $item)
     {
-        $this->authorizeCharacter($character);
-        $this->authorizeItem($character, $item);
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
+
+        abort_unless(
+            $item->character_id === $character->id,
+            404
+        );
 
         $item->delete();
 
@@ -82,13 +116,4 @@ class CharacterItemController extends Controller
             ->with('success', 'Item removido com sucesso!');
     }
 
-    private function authorizeCharacter(Character $character): void
-    {
-        abort_if($character->user_id !== Auth::id(), 403);
-    }
-
-    private function authorizeItem(Character $character, CharacterItem $item): void
-    {
-        abort_if($item->character_id !== $character->id, 404);
-    }
 }

@@ -5,29 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use App\Models\CharacterSpell;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CharacterSpellController extends Controller
 {
-    public function index(Character $character)
+    public function index(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canView($request->user()), 403);
 
         $spells = $character->spells()->latest()->get();
 
         return view('character_spells.index', compact('character', 'spells'));
     }
 
-    public function create(Character $character)
+    public function create(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
 
         return view('character_spells.create', compact('character'));
     }
 
     public function store(Request $request, Character $character)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -47,9 +46,9 @@ class CharacterSpellController extends Controller
             ->with('success', 'Magia adicionada com sucesso!');
     }
 
-    public function edit(Character $character, CharacterSpell $spell)
+    public function edit(Request $request, Character $character, CharacterSpell $spell)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
         $this->authorizeSpell($character, $spell);
 
         return view('character_spells.edit', compact('character', 'spell'));
@@ -57,7 +56,7 @@ class CharacterSpellController extends Controller
 
     public function update(Request $request, Character $character, CharacterSpell $spell)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
         $this->authorizeSpell($character, $spell);
 
         $validated = $request->validate([
@@ -78,9 +77,9 @@ class CharacterSpellController extends Controller
             ->with('success', 'Magia atualizada com sucesso!');
     }
 
-    public function destroy(Character $character, CharacterSpell $spell)
+    public function destroy(Request $request, Character $character, CharacterSpell $spell)
     {
-        $this->authorizeCharacter($character);
+        abort_unless($character->canEdit($request->user()), 403);
         $this->authorizeSpell($character, $spell);
 
         $spell->delete();
@@ -88,11 +87,6 @@ class CharacterSpellController extends Controller
         return redirect()
             ->route('characters.spells.index', $character)
             ->with('success', 'Magia removida com sucesso!');
-    }
-
-    private function authorizeCharacter(Character $character): void
-    {
-        abort_if($character->user_id !== Auth::id(), 403);
     }
 
     private function authorizeSpell(Character $character, CharacterSpell $spell): void

@@ -3,28 +3,49 @@
 namespace App\Http\Controllers;
 
 use App\Models\Character;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class CharacterController extends Controller
 {
-    public function index()
+    /**
+     * Lista os personagens próprios e os compartilhados com o usuário.
+     */
+    public function index(Request $request): View
     {
-        $characters = Auth::user()
-            ->characters()
+        $user = $request->user();
+
+        $characters = Character::query()
+            ->where('user_id', $user->id)
             ->latest()
             ->get();
 
-        return view('characters.index', compact('characters'));
+        $sharedCharacters = $user->sharedCharacters()
+            ->with('user')
+            ->orderBy('characters.name')
+            ->get();
+
+        return view('characters.index', [
+            'characters' => $characters,
+            'sharedCharacters' => $sharedCharacters,
+        ]);
     }
 
-    public function create()
+    /**
+     * Exibe o formulário de criação.
+     */
+    public function create(): View
     {
         return view('characters.create');
     }
 
-    public function store(Request $request)
+    /**
+     * Cadastra um novo personagem.
+     */
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -36,19 +57,23 @@ class CharacterController extends Controller
             'player_name' => 'nullable|string|max:255',
             'experience' => 'nullable|integer|min:0',
             'speed' => 'nullable|integer|min:0',
+
             'cp' => 'nullable|integer|min:0',
             'sp' => 'nullable|integer|min:0',
             'ep' => 'nullable|integer|min:0',
             'gp' => 'nullable|integer|min:0',
             'pp' => 'nullable|integer|min:0',
-            'level' => 'required|integer|min:1',
+
+            'level' => 'required|integer|min:1|max:20',
             'backstory' => 'nullable|string',
+
             'strength' => 'required|integer|min:1|max:20',
             'dexterity' => 'required|integer|min:1|max:20',
             'constitution' => 'required|integer|min:1|max:20',
             'intelligence' => 'required|integer|min:1|max:20',
             'wisdom' => 'required|integer|min:1|max:20',
             'charisma' => 'required|integer|min:1|max:20',
+
             'acrobatics_proficient' => 'nullable|boolean',
             'animal_handling_proficient' => 'nullable|boolean',
             'arcana_proficient' => 'nullable|boolean',
@@ -67,12 +92,14 @@ class CharacterController extends Controller
             'sleight_of_hand_proficient' => 'nullable|boolean',
             'religion_proficient' => 'nullable|boolean',
             'survival_proficient' => 'nullable|boolean',
+
             'strength_save_proficient' => 'nullable|boolean',
             'dexterity_save_proficient' => 'nullable|boolean',
             'constitution_save_proficient' => 'nullable|boolean',
             'intelligence_save_proficient' => 'nullable|boolean',
             'wisdom_save_proficient' => 'nullable|boolean',
             'charisma_save_proficient' => 'nullable|boolean',
+
             'armor_class' => 'required|integer|min:1|max:40',
             'has_inspiration' => 'nullable|boolean',
             'languages_and_proficiencies' => 'nullable|string',
@@ -80,6 +107,7 @@ class CharacterController extends Controller
             'ideals' => 'nullable|string',
             'bonds' => 'nullable|string',
             'flaws' => 'nullable|string',
+
             'hp_max' => 'required|integer|min:1',
             'hp_current' => 'required|integer|min:0',
         ]);
@@ -92,7 +120,10 @@ class CharacterController extends Controller
 
         unset($validated['photo']);
 
-        $validated['hp_current'] = min($validated['hp_current'], $validated['hp_max']);
+        $validated['hp_current'] = min(
+            $validated['hp_current'],
+            $validated['hp_max']
+        );
 
         $skillProficiencies = [
             'acrobatics_proficient',
@@ -113,7 +144,6 @@ class CharacterController extends Controller
             'sleight_of_hand_proficient',
             'religion_proficient',
             'survival_proficient',
-
         ];
 
         $savingThrowProficiencies = [
@@ -125,47 +155,84 @@ class CharacterController extends Controller
             'charisma_save_proficient',
         ];
 
-        foreach ($savingThrowProficiencies as $field) {
-            $validated[$field] = $request->has($field);
-        }
-
         foreach ($skillProficiencies as $field) {
-            $validated[$field] = $request->has($field);
+            $validated[$field] = $request->boolean($field);
         }
 
-        $validated['has_inspiration'] = $request->has('has_inspiration');
+        foreach ($savingThrowProficiencies as $field) {
+            $validated[$field] = $request->boolean($field);
+        }
+
+        $validated['has_inspiration'] = $request->boolean(
+            'has_inspiration'
+        );
+
         $validated['experience'] = $validated['experience'] ?? 0;
         $validated['speed'] = $validated['speed'] ?? 30;
+
         $validated['cp'] = $validated['cp'] ?? 0;
         $validated['sp'] = $validated['sp'] ?? 0;
         $validated['ep'] = $validated['ep'] ?? 0;
         $validated['gp'] = $validated['gp'] ?? 0;
         $validated['pp'] = $validated['pp'] ?? 0;
 
-        Auth::user()->characters()->create($validated);
+        $request->user()
+            ->characters()
+            ->create($validated);
 
         return redirect()
             ->route('characters.index')
             ->with('success', 'Personagem criado com sucesso!');
     }
 
-    public function show(Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Exibe a ficha para proprietário, editor ou visualizador.
+     */
+    public function show(
+        Request $request,
+        Character $character
+    ): View {
+        abort_unless(
+            $character->canView($request->user()),
+            403
+        );
+
+        $character->load([
+            'features',
+            'languageProficiencies',
+            'user',
+            'shares.user',
+        ]);
 
         return view('characters.show', compact('character'));
     }
 
-    public function edit(Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Exibe o formulário de edição para proprietário ou editor.
+     */
+    public function edit(
+        Request $request,
+        Character $character
+    ): View {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         return view('characters.edit', compact('character'));
     }
 
-    public function update(Request $request, Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Atualiza a ficha para proprietário ou editor.
+     */
+    public function update(
+        Request $request,
+        Character $character
+    ): RedirectResponse {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -177,21 +244,26 @@ class CharacterController extends Controller
             'player_name' => 'nullable|string|max:255',
             'experience' => 'nullable|integer|min:0',
             'speed' => 'nullable|integer|min:0',
+
             'cp' => 'nullable|integer|min:0',
             'sp' => 'nullable|integer|min:0',
             'ep' => 'nullable|integer|min:0',
             'gp' => 'nullable|integer|min:0',
             'pp' => 'nullable|integer|min:0',
-            'level' => 'required|integer|min:1',
+
+            'level' => 'required|integer|min:1|max:20',
             'backstory' => 'nullable|string',
+
             'strength' => 'required|integer|min:1|max:20',
             'dexterity' => 'required|integer|min:1|max:20',
             'constitution' => 'required|integer|min:1|max:20',
             'intelligence' => 'required|integer|min:1|max:20',
             'wisdom' => 'required|integer|min:1|max:20',
             'charisma' => 'required|integer|min:1|max:20',
+
             'hp_max' => 'required|integer|min:1',
             'hp_current' => 'required|integer|min:0',
+
             'acrobatics_proficient' => 'nullable|boolean',
             'animal_handling_proficient' => 'nullable|boolean',
             'arcana_proficient' => 'nullable|boolean',
@@ -210,12 +282,14 @@ class CharacterController extends Controller
             'sleight_of_hand_proficient' => 'nullable|boolean',
             'religion_proficient' => 'nullable|boolean',
             'survival_proficient' => 'nullable|boolean',
+
             'strength_save_proficient' => 'nullable|boolean',
             'dexterity_save_proficient' => 'nullable|boolean',
             'constitution_save_proficient' => 'nullable|boolean',
             'intelligence_save_proficient' => 'nullable|boolean',
             'wisdom_save_proficient' => 'nullable|boolean',
             'charisma_save_proficient' => 'nullable|boolean',
+
             'armor_class' => 'required|integer|min:1|max:40',
             'has_inspiration' => 'nullable|boolean',
             'languages_and_proficiencies' => 'nullable|string',
@@ -255,24 +329,35 @@ class CharacterController extends Controller
             'charisma_save_proficient',
         ];
 
-        foreach ($savingThrowProficiencies as $field) {
-            $validated[$field] = $request->has($field);
-        }
-
         foreach ($skillProficiencies as $field) {
-            $validated[$field] = $request->has($field);
+            $validated[$field] = $request->boolean($field);
         }
 
-        $validated['has_inspiration'] = $request->has('has_inspiration');
+        foreach ($savingThrowProficiencies as $field) {
+            $validated[$field] = $request->boolean($field);
+        }
+
+        $validated['has_inspiration'] = $request->boolean(
+            'has_inspiration'
+        );
+
+        $validated['hp_current'] = min(
+            $validated['hp_current'],
+            $validated['hp_max']
+        );
 
         if ($request->hasFile('photo')) {
-            if ($character->photo_path) {
-                Storage::disk('public')->delete($character->photo_path);
-            }
-
-            $validated['photo_path'] = $request
+            $newPhotoPath = $request
                 ->file('photo')
                 ->store('character-photos', 'public');
+
+            if ($character->photo_path) {
+                Storage::disk('public')->delete(
+                    $character->photo_path
+                );
+            }
+
+            $validated['photo_path'] = $newPhotoPath;
         }
 
         unset($validated['photo']);
@@ -284,9 +369,23 @@ class CharacterController extends Controller
             ->with('success', 'Personagem atualizado com sucesso!');
     }
 
-    public function destroy(Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Exclui o personagem. Apenas o proprietário pode executar.
+     */
+    public function destroy(
+        Request $request,
+        Character $character
+    ): RedirectResponse {
+        abort_unless(
+            $character->isOwner($request->user()),
+            403
+        );
+
+        if ($character->photo_path) {
+            Storage::disk('public')->delete(
+                $character->photo_path
+            );
+        }
 
         $character->delete();
 
@@ -295,15 +394,27 @@ class CharacterController extends Controller
             ->with('success', 'Personagem excluído com sucesso!');
     }
 
-    public function damage(Request $request, Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Aplica dano ao personagem.
+     */
+    public function damage(
+        Request $request,
+        Character $character
+    ): RedirectResponse {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $validated = $request->validate([
             'amount' => 'required|integer|min:1',
         ]);
 
-        $character->hp_current = max(0, $character->hp_current - $validated['amount']);
+        $character->hp_current = max(
+            0,
+            $character->hp_current - $validated['amount']
+        );
+
         $character->save();
 
         return redirect()
@@ -311,15 +422,27 @@ class CharacterController extends Controller
             ->with('success', 'Dano aplicado com sucesso!');
     }
 
-    public function heal(Request $request, Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Recupera pontos de vida do personagem.
+     */
+    public function heal(
+        Request $request,
+        Character $character
+    ): RedirectResponse {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $validated = $request->validate([
             'amount' => 'required|integer|min:1',
         ]);
 
-        $character->hp_current = min($character->hp_max, $character->hp_current + $validated['amount']);
+        $character->hp_current = min(
+            $character->hp_max,
+            $character->hp_current + $validated['amount']
+        );
+
         $character->save();
 
         return redirect()
@@ -327,14 +450,17 @@ class CharacterController extends Controller
             ->with('success', 'Vida restaurada com sucesso!');
     }
 
-    private function authorizeCharacter(Character $character): void
-    {
-        abort_if($character->user_id !== Auth::id(), 403);
-    }
-
-    public function toggleInspiration(Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Alterna a inspiração do personagem.
+     */
+    public function toggleInspiration(
+        Request $request,
+        Character $character
+    ): RedirectResponse {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $character->has_inspiration = ! $character->has_inspiration;
         $character->save();
@@ -344,9 +470,17 @@ class CharacterController extends Controller
             ->with('success', 'Inspiração atualizada com sucesso!');
     }
 
-    public function updateCoins(Request $request, Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Atualiza as moedas do personagem.
+     */
+    public function updateCoins(
+        Request $request,
+        Character $character
+    ): RedirectResponse|JsonResponse {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $validated = $request->validate([
             'cp' => 'required|integer|min:0',
@@ -358,9 +492,14 @@ class CharacterController extends Controller
 
         $character->update($validated);
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Moedas atualizadas com sucesso!',
+            ]);
+        }
+
         return redirect()
             ->route('characters.show', $character)
             ->with('success', 'Moedas atualizadas com sucesso!');
     }
-
 }

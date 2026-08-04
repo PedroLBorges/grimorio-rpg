@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-serif text-3xl font-bold text-amber-950 dark:text-amber-200">
             Editar Arma - {{ $character->name }}
         </h2>
     </x-slot>
 
-    <div class="py-8">
+    <div class="min-h-screen bg-gradient-to-b from-[#b08a5a] to-[#6b4423] py-10">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+            <div class="rounded-2xl border-4 border-amber-900/60 bg-amber-100/90 p-6 text-amber-950 shadow-2xl sm:p-8 [&_label]:font-serif [&_label]:font-bold [&_input]:border-amber-800/40 [&_input]:bg-amber-50/70 [&_input]:focus:border-purple-800 [&_input]:focus:ring-purple-800 [&_select]:border-amber-800/40 [&_select]:bg-amber-50/70 [&_textarea]:border-amber-800/40 [&_textarea]:bg-amber-50/70">
                 <form method="POST" action="{{ route('characters.weapons.update', [$character, $weapon]) }}" class="space-y-4">
                     @csrf
                     @method('PUT')
@@ -78,12 +78,12 @@
 
                     <div class="flex gap-2">
                         <button type="submit"
-                                class="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                                class="rounded-lg border border-amber-500/70 bg-gradient-to-r from-amber-900 to-yellow-900 px-5 py-2 font-serif font-bold text-yellow-200 shadow hover:from-amber-800 hover:to-yellow-800">
                             Atualizar
                         </button>
 
                         <a href="{{ route('characters.weapons.index', $character) }}"
-                           class="rounded bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400">
+                           class="rounded-lg border border-stone-600 bg-stone-300 px-5 py-2 font-serif font-bold text-stone-900 hover:bg-stone-400">
                             Cancelar
                         </a>
                     </div>

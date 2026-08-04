@@ -13,7 +13,7 @@
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="font-serif text-sm uppercase tracking-[0.25em] text-amber-800">
-                        Registro físico
+                        Capítulo da aparência
                     </p>
 
                     <h2 class="font-serif text-3xl font-bold text-amber-950">
@@ -21,17 +21,19 @@
                     </h2>
 
                     <p class="mt-1 text-sm text-amber-900/75">
-                        Retrato e características físicas do aventureiro.
+                        Retrato e características preservados nas páginas do grimório.
                     </p>
                 </div>
 
                 <div class="flex flex-wrap gap-2">
+                    @if ($character->canEdit(auth()->user()))
                     <a
                         href="{{ route('characters.appearance.edit', $character) }}"
                         class="rounded-lg border border-amber-500/70 bg-gradient-to-r from-purple-950 via-purple-800 to-indigo-950 px-4 py-2 text-center font-serif text-sm font-bold text-amber-200 shadow transition hover:from-purple-900 hover:via-purple-700 hover:to-indigo-900"
                     >
                         Editar aparência
                     </a>
+                    @endif
 
                     <a
                         href="{{ route('characters.show', $character) }}"
@@ -181,12 +183,14 @@
                                 Voltar à ficha
                             </a>
 
+                            @if ($character->canEdit(auth()->user()))
                             <a
                                 href="{{ route('characters.appearance.edit', $character) }}"
                                 class="rounded-lg border border-amber-500/70 bg-gradient-to-r from-purple-950 via-purple-800 to-indigo-950 px-5 py-3 text-center font-serif font-bold text-amber-200 shadow-lg transition hover:from-purple-900 hover:via-purple-700 hover:to-indigo-900"
                             >
                                 Editar aparência
                             </a>
+                            @endif
                         </div>
                     </main>
                 </div>

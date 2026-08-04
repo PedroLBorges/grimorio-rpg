@@ -3,32 +3,63 @@
 namespace App\Http\Controllers;
 
 use App\Models\Character;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class CharacterAppearanceController extends Controller
 {
-    public function show(Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Exibe a aparência para proprietário, editor ou visualizador.
+     */
+    public function show(
+        Request $request,
+        Character $character
+    ): View {
+        abort_unless(
+            $character->canView($request->user()),
+            403
+        );
 
         $appearance = $character->appearance;
 
-        return view('character_appearance.show', compact('character', 'appearance'));
+        return view(
+            'character_appearance.show',
+            compact('character', 'appearance')
+        );
     }
 
-    public function edit(Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Exibe o formulário de edição apenas para quem pode editar.
+     */
+    public function edit(
+        Request $request,
+        Character $character
+    ): View {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $appearance = $character->appearance;
 
-        return view('character_appearance.edit', compact('character', 'appearance'));
+        return view(
+            'character_appearance.edit',
+            compact('character', 'appearance')
+        );
     }
 
-    public function update(Request $request, Character $character)
-    {
-        $this->authorizeCharacter($character);
+    /**
+     * Atualiza a aparência apenas para proprietário ou editor.
+     */
+    public function update(
+        Request $request,
+        Character $character
+    ): RedirectResponse {
+        abort_unless(
+            $character->canEdit($request->user()),
+            403
+        );
 
         $validated = $request->validate([
             'height' => 'nullable|string|max:50',
@@ -47,10 +78,5 @@ class CharacterAppearanceController extends Controller
         return redirect()
             ->route('characters.appearance.show', $character)
             ->with('success', 'Descrição física atualizada!');
-    }
-
-    private function authorizeCharacter(Character $character): void
-    {
-        abort_if($character->user_id !== Auth::id(), 403);
     }
 }

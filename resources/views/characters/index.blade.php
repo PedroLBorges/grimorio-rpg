@@ -172,6 +172,125 @@
                     </div>
                 @endforelse
 
+                <!-- FICHAS COMPARTILHADAS -->
+                    <div class="mt-10 border-t border-amber-900/30 pt-8">
+                        <div class="mb-7 text-center">
+                            <p class="font-serif text-xs uppercase tracking-[0.3em] text-purple-900">
+                                Acessos recebidos
+                            </p>
+
+                            <h3 class="mt-1 font-serif text-2xl font-bold text-amber-950">
+                                Compartilhados comigo
+                            </h3>
+
+                            <p class="mt-2 text-sm text-amber-900/70">
+                                Fichas concedidas a você por outros jogadores.
+                            </p>
+
+                            <div class="mx-auto mt-3 h-px w-40 bg-amber-800/50"></div>
+                        </div>
+
+                        @forelse ($sharedCharacters as $character)
+                            <article
+                                class="group mb-4 rounded-xl border border-purple-900/30 bg-purple-50/40 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-purple-900/60 hover:bg-purple-100/50 hover:shadow-md"
+                            >
+                                <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <h4 class="font-serif text-2xl font-bold text-amber-950">
+                                                {{ $character->name }}
+                                            </h4>
+
+                                            <span
+                                                class="rounded-full border border-purple-800/40 bg-purple-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-purple-950"
+                                            >
+                                                Compartilhado
+                                            </span>
+
+                                            <span
+                                                class="rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide
+                                                    {{ $character->pivot->permission === 'edit'
+                                                        ? 'border-green-800/30 bg-green-100 text-green-900'
+                                                        : 'border-amber-800/30 bg-amber-200/70 text-amber-950' }}"
+                                            >
+                                                {{ $character->pivot->permission === 'edit'
+                                                    ? 'Editor'
+                                                    : 'Visualizador' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-amber-950 sm:grid-cols-2 lg:grid-cols-4">
+                                            <p>
+                                                <span class="font-serif font-bold text-amber-900">
+                                                    Classe:
+                                                </span>
+
+                                                {{ $character->class }}
+                                            </p>
+
+                                            <p>
+                                                <span class="font-serif font-bold text-amber-900">
+                                                    Raça:
+                                                </span>
+
+                                                {{ $character->race }}
+                                            </p>
+
+                                            <p>
+                                                <span class="font-serif font-bold text-amber-900">
+                                                    Nível:
+                                                </span>
+
+                                                {{ $character->level }}
+                                            </p>
+
+                                            <p>
+                                                <span class="font-serif font-bold text-amber-900">
+                                                    Proprietário:
+                                                </span>
+
+                                                {{ $character->user->name ?? 'Não identificado' }}
+                                            </p>
+                                        </div>
+
+                                        <p class="mt-3 text-sm italic text-amber-900/70">
+                                            Você recebeu acesso de
+                                            <strong>{{ $character->user->name ?? 'outro usuário' }}</strong>.
+                                        </p>
+                                    </div>
+
+                                    <div class="flex shrink-0 flex-wrap gap-2">
+                                        <a
+                                            href="{{ route('characters.show', $character) }}"
+                                            class="rounded-lg border border-purple-900 bg-gradient-to-r from-purple-950 via-purple-800 to-indigo-950 px-4 py-2 font-serif font-bold text-amber-200 shadow transition hover:from-purple-900 hover:via-purple-700 hover:to-indigo-900"
+                                        >
+                                            Abrir ficha
+                                        </a>
+
+                                        @if ($character->pivot->permission === 'edit')
+                                            <a
+                                                href="{{ route('characters.edit', $character) }}"
+                                                class="rounded-lg border border-amber-900 bg-amber-700 px-4 py-2 font-serif font-bold text-white shadow transition hover:bg-amber-800"
+                                            >
+                                                Editar
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </article>
+                        @empty
+                            <div class="rounded-xl border border-dashed border-purple-900/35 bg-purple-50/30 p-8 text-center">
+                                <p class="font-serif text-xl font-bold text-amber-950">
+                                    Nenhuma ficha compartilhada
+                                </p>
+
+                                <p class="mx-auto mt-2 max-w-lg text-sm text-amber-900/70">
+                                    Quando outro jogador compartilhar um personagem com você, ele aparecerá aqui.
+                                </p>
+                            </div>
+                        @endforelse
+                    </div>
+
                 <div class="mt-7 flex flex-col gap-3 border-t border-amber-900/25 pt-5 sm:flex-row sm:items-center sm:justify-between">
                     <p class="font-serif text-sm italic text-amber-900/65">
                         Cada ficha representa uma história ainda em construção.

@@ -17,11 +17,52 @@
                         </span>
                     </div>
 
-                    <div class="mt-4">
-                        <a href="{{ route('characters.edit', $character) }}"
-                        class="inline-block rounded border border-amber-800 bg-amber-700 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-800">
-                            Editar Ficha
-                        </a>
+                    @php
+                        $currentUser = auth()->user();
+                        $isOwner = $character->isOwner($currentUser);
+                        $currentShare = $isOwner
+                            ? null
+                            : $character->shareFor($currentUser);
+                    @endphp
+
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                        @if ($isOwner)
+                            <span
+                                class="inline-flex items-center rounded-full border border-amber-800/40 bg-amber-200/80 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-950"
+                            >
+                                👑 Proprietário
+                            </span>
+                        @elseif ($currentShare?->permission === 'edit')
+                            <span
+                                class="inline-flex items-center rounded-full border border-purple-800/40 bg-purple-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-purple-950"
+                            >
+                                ✏ Editor compartilhado
+                            </span>
+                        @else
+                            <span
+                                class="inline-flex items-center rounded-full border border-stone-700/40 bg-stone-200 px-3 py-1 text-xs font-bold uppercase tracking-wide text-stone-900"
+                            >
+                                👁 Visualizador
+                            </span>
+                        @endif
+
+                        @if ($character->canEdit($currentUser))
+                            <a
+                                href="{{ route('characters.edit', $character) }}"
+                                class="inline-block rounded border border-amber-800 bg-amber-700 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-800"
+                            >
+                                Editar Ficha
+                            </a>
+                        @endif
+
+                        @if ($character->canManageShares($currentUser))
+                            <a
+                                href="{{ route('characters.sharing.show', $character) }}"
+                                class="inline-block rounded border border-purple-900 bg-purple-900 px-4 py-2 text-sm font-semibold text-amber-200 shadow hover:bg-purple-800"
+                            >
+                                Compartilhar
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -111,17 +152,25 @@
                     <!-- INSPIRAÇÃO + PROFICIÊNCIA + RESISTÊNCIAS + PERÍCIAS -->
                     <div class="space-y-4">
 
-                        <div class="rounded-xl border border-amber-700/30 bg-amber-100/80 shadow p-3 text-amber-950">
+                        @if ($character->canEdit(auth()->user()))
                             <form method="POST" action="{{ route('characters.toggleInspiration', $character) }}">
                                 @csrf
                                 @method('PATCH')
 
-                                <button type="submit"
-                                        class="w-full rounded px-4 py-2 text-white {{ $character->has_inspiration ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600' }}">
+                                <button
+                                    type="submit"
+                                    class="w-full rounded px-4 py-2 text-white {{ $character->has_inspiration ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600' }}"
+                                >
                                     {{ $character->has_inspiration ? 'Possui Inspiração' : 'Sem Inspiração' }}
                                 </button>
                             </form>
-                        </div>
+                        @else
+                            <div
+                                class="w-full rounded px-4 py-2 text-center text-white {{ $character->has_inspiration ? 'bg-green-600' : 'bg-gray-500' }}"
+                            >
+                                {{ $character->has_inspiration ? 'Possui Inspiração' : 'Sem Inspiração' }}
+                            </div>
+                        @endif
 
                         <div class="rounded-xl border border-amber-700/30 bg-amber-100/80 shadow px-4 py-2 text-center text-amber-950">
                             <p class="text-xs text-gray-700">Proficiência</p>
@@ -208,10 +257,12 @@
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-lg font-semibold">Idiomas e outras proficiências</h3>
 
-                                <a href="{{ route('characters.language-proficiencies.index', $character) }}"
-                                class="rounded border border-amber-800 bg-amber-700 px-3 py-1 text-sm font-semibold text-white hover:bg-amber-800">
-                                    Gerenciar
-                                </a>
+                                @if ($character->canEdit(auth()->user()))
+                                    <a href="{{ route('characters.features.index', $character) }}"
+                                    class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-900 px-3 py-1 text-sm font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-800">
+                                        Gerenciar
+                                    </a>
+                                @endif
                             </div>
 
                             @forelse($character->languageProficiencies as $record)
@@ -313,19 +364,41 @@
                             {{ $character->hp_current }} / {{ $character->hp_max }}
                         </p>
 
-                        <div class="mt-4 space-y-2">
-                            <form method="POST" action="{{ route('characters.damage', $character) }}" class="flex gap-2">
-                                @csrf @method('PATCH')
-                                <input type="number" name="amount" class="w-full rounded border-gray-300" placeholder="Dano">
-                                <button class="bg-red-600 text-white px-3 rounded">-</button>
-                            </form>
+                        @if ($character->canEdit(auth()->user()))
+                            <div class="mt-4 space-y-2">
+                                <form method="POST" action="{{ route('characters.damage', $character) }}" class="flex gap-2">
+                                    @csrf
+                                    @method('PATCH')
 
-                            <form method="POST" action="{{ route('characters.heal', $character) }}" class="flex gap-2">
-                                @csrf @method('PATCH')
-                                <input type="number" name="amount" class="w-full rounded border-gray-300" placeholder="Cura">
-                                <button class="bg-green-600 text-white px-3 rounded">+</button>
-                            </form>
-                        </div>
+                                    <input
+                                        type="number"
+                                        name="amount"
+                                        class="w-full rounded border-gray-300"
+                                        placeholder="Dano"
+                                    >
+
+                                    <button class="rounded bg-red-600 px-3 text-white">
+                                        -
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{{ route('characters.heal', $character) }}" class="flex gap-2">
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <input
+                                        type="number"
+                                        name="amount"
+                                        class="w-full rounded border-gray-300"
+                                        placeholder="Cura"
+                                    >
+
+                                    <button class="rounded bg-green-600 px-3 text-white">
+                                        +
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
@@ -400,35 +473,35 @@
                                 <div class="grid grid-cols-5 gap-2 text-center text-sm">
                                     <div class="rounded border border-amber-700/20 bg-amber-50/60 p-1">
                                         <label class="block text-xs text-gray-600">PC</label>
-                                        <input type="number" name="cp" value="{{ $character->cp }}" min="0"
+                                        <input type="number" name="cp" value="{{ $character->cp }}" min="0" @disabled(! $character->canEdit(auth()->user()))
                                             class="coin-input w-full rounded border-gray-300 text-center text-sm pr-1"
                                             style="appearance: textfield;">
                                     </div>
 
                                     <div class="rounded border border-amber-700/20 bg-amber-50/60 p-1">
                                         <label class="block text-xs text-gray-600">PP</label>
-                                        <input type="number" name="sp" value="{{ $character->sp }}" min="0"
+                                        <input type="number" name="sp" value="{{ $character->sp }}" min="0" @disabled(! $character->canEdit(auth()->user()))
                                             class="coin-input w-full rounded border-gray-300 text-center text-sm pr-1"
                                             style="appearance: textfield;">
                                     </div>
 
                                     <div class="rounded border border-amber-700/20 bg-amber-50/60 p-1">
                                         <label class="block text-xs text-gray-600">PE</label>
-                                        <input type="number" name="ep" value="{{ $character->ep }}" min="0"
+                                        <input type="number" name="ep" value="{{ $character->ep }}" min="0" @disabled(! $character->canEdit(auth()->user()))
                                             class="coin-input w-full rounded border-gray-300 text-center text-sm pr-1"
                                             style="appearance: textfield;">
                                     </div>
 
                                     <div class="rounded border border-amber-700/20 bg-amber-50/60 p-1">
                                         <label class="block text-xs text-gray-600">PO</label>
-                                        <input type="number" name="gp" value="{{ $character->gp }}" min="0"
+                                        <input type="number" name="gp" value="{{ $character->gp }}" min="0" @disabled(! $character->canEdit(auth()->user()))
                                             class="coin-input w-full rounded border-gray-300 text-center text-sm pr-1"
                                             style="appearance: textfield;">
                                     </div>
 
                                     <div class="rounded border border-amber-700/20 bg-amber-50/60 p-1">
                                         <label class="block text-xs text-gray-600">PL</label>
-                                        <input type="number" name="pp" value="{{ $character->pp }}" min="0"
+                                        <input type="number" name="pp" value="{{ $character->pp }}" min="0" @disabled(! $character->canEdit(auth()->user()))
                                             class="coin-input w-full rounded border-gray-300 text-center text-sm pr-1"
                                             style="appearance: textfield;">
                                     </div>
@@ -487,10 +560,12 @@
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="text-lg font-semibold">Habilidades e Características</h3>
 
-                            <a href="{{ route('characters.features.index', $character) }}"
-                                class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-900 px-3 py-1 text-sm font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-800">
-                                Gerenciar
-                            </a>
+                            @if ($character->canEdit(auth()->user()))
+                                <a href="{{ route('characters.language-proficiencies.index', $character) }}"
+                                class="rounded border border-amber-800 bg-amber-700 px-3 py-1 text-sm font-semibold text-white hover:bg-amber-800">
+                                    Gerenciar
+                                </a>
+                            @endif
                         </div>
 
                         @forelse($character->features as $feature)
@@ -521,7 +596,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('coinsForm');
-            const inputs = document.querySelectorAll('.coin-input');
+            const inputs = document.querySelectorAll('.coin-input:not(:disabled)');
             let timeout = null;
 
             function saveCoins() {

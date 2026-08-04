@@ -9,6 +9,7 @@ use App\Http\Controllers\CharacterSpellController;
 use App\Http\Controllers\CharacterFeatureController;
 use App\Http\Controllers\CharacterLanguageProficiencyController;
 use App\Http\Controllers\CharacterAppearanceController;
+use App\Http\Controllers\CharacterSharingController;
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('characters', CharacterController::class);
@@ -68,7 +69,30 @@ Route::middleware('auth')->group(function () {
         ->name('characters.appearance.edit');
     Route::put('/characters/{character}/appearance', [CharacterAppearanceController::class, 'update'])
         ->name('characters.appearance.update');
+    Route::prefix('characters/{character}/sharing')
+        ->name('characters.sharing.')
+        ->group(function () {
+            Route::get(
+                '/',
+                [CharacterSharingController::class, 'show']
+            )->name('show');
 
-    });
+            Route::post(
+                '/',
+                [CharacterSharingController::class, 'store']
+            )->name('store');
+
+            Route::put(
+                '/{share}',
+                [CharacterSharingController::class, 'update']
+            )->name('update');
+
+            Route::delete(
+                '/{share}',
+                [CharacterSharingController::class, 'destroy']
+            )->name('destroy');
+        });
+
+});
 
 require __DIR__.'/auth.php';

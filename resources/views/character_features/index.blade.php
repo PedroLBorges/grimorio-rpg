@@ -23,13 +23,15 @@
             @endif
 
             <div class="mb-4 flex gap-2">
+                @if ($character->canEdit(auth()->user()))
                 <a href="{{ route('characters.features.create', $character) }}"
-                   class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-950 px-4 py-2 font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-900"
+                   class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-950 px-4 py-2 font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-900">
                     Novo Registro
                 </a>
+                @endif
 
                 <a href="{{ route('characters.show', $character) }}"
-                   class="rounded-lg border border-stone-600 bg-stone-300 px-4 py-2 font-semibold text-stone-900 hover:bg-stone-400"
+                   class="rounded-lg border border-stone-600 bg-stone-300 px-4 py-2 font-semibold text-stone-900 hover:bg-stone-400">
                     Voltar à ficha
                 </a>
             </div>
@@ -55,9 +57,10 @@
                             @endif
                         </div>
 
+                        @if ($character->canEdit(auth()->user()))
                         <div class="flex gap-2">
                             <a href="{{ route('characters.features.edit', [$character, $feature]) }}"
-                               class="text-amber-800 font-semibold hover:underline"
+                               class="text-amber-800 font-semibold hover:underline">
                                 Editar
                             </a>
 
@@ -72,6 +75,7 @@
                                 </button>
                             </form>
                         </div>
+                        @endif
 
                     </div>
                 @empty

@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Character;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -32,5 +34,20 @@ class User extends Authenticatable
     }
     public function characters(){
     return $this->hasMany(Character::class);
+    }
+
+    public function characterShares(): HasMany
+    {
+        return $this->hasMany(CharacterShare::class);
+    }
+
+    public function sharedCharacters(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Character::class,
+            'character_shares'
+        )
+            ->withPivot('permission')
+            ->withTimestamps();
     }
 }

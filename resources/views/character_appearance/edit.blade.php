@@ -13,7 +13,7 @@
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="font-serif text-sm uppercase tracking-[0.25em] text-amber-800">
-                        Registro físico
+                        Capítulo da aparência
                     </p>
 
                     <h2 class="font-serif text-3xl font-bold text-amber-950">

@@ -9,6 +9,10 @@ use App\Models\CharacterSpell;
 use App\Models\CharacterFeature;
 use App\Models\CharacterLanguageProficiency;
 use App\Models\CharacterAppearance;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 class Character extends Model
@@ -248,6 +252,65 @@ class Character extends Model
     public function appearance()
     {
         return $this->hasOne(CharacterAppearance::class);
+    }
+
+    public function shares(): HasMany
+    {
+        return $this->hasMany(CharacterShare::class);
+    }
+
+    public function sharedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'character_shares'
+        )
+            ->withPivot('permission')
+            ->withTimestamps();
+    }
+
+    public function isOwner(?User $user): bool
+    {
+        return $user !== null && $this->user_id === $user->id;
+    }
+
+    public function shareFor(?User $user): ?CharacterShare
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        return $this->shares()
+            ->where('user_id', $user->id)
+            ->first();
+    }
+
+    public function isSharedWith(?User $user): bool
+    {
+        return $this->shareFor($user) !== null;
+    }
+
+    public function canView(?User $user): bool
+    {
+        if ($this->isOwner($user)) {
+            return true;
+        }
+
+        return $this->isSharedWith($user);
+    }
+
+    public function canEdit(?User $user): bool
+    {
+        if ($this->isOwner($user)) {
+            return true;
+        }
+
+        return $this->shareFor($user)?->permission === 'edit';
+    }
+
+    public function canManageShares(?User $user): bool
+    {
+        return $this->isOwner($user);
     }
 
 }
