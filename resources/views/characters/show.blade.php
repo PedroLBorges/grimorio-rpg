@@ -239,6 +239,43 @@
                 <!-- COLUNA CENTRAL -->
                 <div class="space-y-4">
 
+                    <!-- RETRATO DO PERSONAGEM -->
+                    <div
+                        class="rounded-xl border border-amber-700/30 bg-amber-100/80 p-4 text-amber-950 shadow"
+                    >
+                        <div class="flex flex-col items-center">
+                            @if ($character->photo_path)
+                                <img
+                                    src="{{ asset('storage/' . $character->photo_path) }}"
+                                    alt="Retrato de {{ $character->name }}"
+                                    class="h-80 w-64 rounded-xl border-4 border-amber-900/60 object-cover shadow-xl"
+                                >
+                            @else
+                                <div
+                                    class="flex h-80 w-64 items-center justify-center rounded-xl border-4 border-dashed border-amber-900/35 bg-amber-50/50 p-6 text-center"
+                                >
+                                    <div>
+                                        <p class="font-serif text-lg font-bold text-amber-950">
+                                            Retrato não registrado
+                                        </p>
+
+                                        <p class="mt-2 text-sm text-amber-900/65">
+                                            Adicione uma imagem pela edição da ficha.
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <p class="mt-3 font-serif text-xl font-bold text-amber-950">
+                                {{ $character->name }}
+                            </p>
+
+                            <p class="text-sm text-amber-900/70">
+                                {{ $character->race }} • {{ $character->class }}
+                            </p>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-3 gap-4">
 
                         <!-- CA -->

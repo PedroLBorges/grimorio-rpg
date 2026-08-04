@@ -16,6 +16,7 @@ class Character extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'photo_path',
         'race',
         'class',
         'level',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CharacterController extends Controller
 {
@@ -27,6 +28,7 @@ class CharacterController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'race' => 'required|string|max:255',
             'class' => 'required|string|max:255',
             'background' => 'required|string|max:255',
@@ -81,6 +83,14 @@ class CharacterController extends Controller
             'hp_max' => 'required|integer|min:1',
             'hp_current' => 'required|integer|min:0',
         ]);
+
+        if ($request->hasFile('photo')) {
+            $validated['photo_path'] = $request
+                ->file('photo')
+                ->store('character-photos', 'public');
+        }
+
+        unset($validated['photo']);
 
         $validated['hp_current'] = min($validated['hp_current'], $validated['hp_max']);
 
@@ -159,6 +169,7 @@ class CharacterController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'race' => 'required|string|max:255',
             'class' => 'required|string|max:255',
             'background' => 'required|string|max:255',
@@ -253,6 +264,18 @@ class CharacterController extends Controller
         }
 
         $validated['has_inspiration'] = $request->has('has_inspiration');
+
+        if ($request->hasFile('photo')) {
+            if ($character->photo_path) {
+                Storage::disk('public')->delete($character->photo_path);
+            }
+
+            $validated['photo_path'] = $request
+                ->file('photo')
+                ->store('character-photos', 'public');
+        }
+
+        unset($validated['photo']);
 
         $character->update($validated);
 

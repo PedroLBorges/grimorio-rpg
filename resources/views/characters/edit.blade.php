@@ -8,7 +8,7 @@
     <div class="py-8">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <form method="POST" action="{{ route('characters.update', $character) }}" class="space-y-4">
+                <form method="POST" action="{{ route('characters.update', $character) }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     @method('PUT')
 
@@ -31,6 +31,71 @@
                     <div>
                         <label class="block font-medium">Nome do Jogador</label>
                         <input type="text" name="player_name" value="{{ old('player_name', $character->player_name) }}" class="w-full rounded border-gray-300">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label
+                            for="photo"
+                            class="block font-serif text-sm font-bold text-amber-950"
+                        >
+                            Retrato do personagem
+                        </label>
+
+                        <div class="mt-2 flex flex-col gap-5 sm:flex-row sm:items-start">
+                            <div>
+                                @if ($character->photo_path)
+                                    <img
+                                        id="current-photo"
+                                        src="{{ asset('storage/' . $character->photo_path) }}"
+                                        alt="Retrato de {{ $character->name }}"
+                                        class="h-64 w-48 rounded-xl border-4 border-amber-900/50 object-cover shadow-lg"
+                                    >
+                                @else
+                                    <div
+                                        id="current-photo-placeholder"
+                                        class="flex h-64 w-48 items-center justify-center rounded-xl border-4 border-dashed border-amber-900/35 bg-amber-100/50 p-4 text-center font-serif text-sm text-amber-900/60"
+                                    >
+                                        Nenhum retrato cadastrado
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <input
+                                    id="photo"
+                                    type="file"
+                                    name="photo"
+                                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                    class="block w-full rounded-lg border border-amber-800/40 bg-amber-50/80 px-3 py-2 text-sm text-amber-950 shadow-inner
+                                        file:mr-4 file:rounded-lg file:border-0 file:bg-purple-900 file:px-4 file:py-2
+                                        file:font-serif file:font-bold file:text-amber-200 hover:file:bg-purple-800"
+                                >
+
+                                <p class="mt-2 text-xs text-amber-900/65">
+                                    Envie uma nova imagem apenas para substituir o retrato atual.
+                                    Formatos aceitos: JPG, JPEG, PNG ou WEBP. Máximo de 5 MB.
+                                </p>
+
+                                @error('photo')
+                                    <p class="mt-2 text-sm font-semibold text-red-800">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
+                                <div id="photo-preview-container" class="mt-4 hidden">
+                                    <p class="mb-2 font-serif text-sm font-bold text-amber-950">
+                                        Prévia do novo retrato
+                                    </p>
+
+                                    <img
+                                        id="photo-preview"
+                                        src=""
+                                        alt="Prévia do novo retrato"
+                                        class="h-64 w-48 rounded-xl border-4 border-purple-900/50 object-cover shadow-lg"
+                                    >
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -371,4 +436,49 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const photoInput = document.getElementById('photo');
+            const photoPreview = document.getElementById('photo-preview');
+            const photoPreviewContainer = document.getElementById(
+                'photo-preview-container'
+            );
+
+            let currentPreviewUrl = null;
+
+            photoInput?.addEventListener('change', event => {
+                const file = event.target.files?.[0];
+
+                if (currentPreviewUrl) {
+                    URL.revokeObjectURL(currentPreviewUrl);
+                    currentPreviewUrl = null;
+                }
+
+                if (!file || !photoPreview || !photoPreviewContainer) {
+                    photoPreviewContainer?.classList.add('hidden');
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    photoInput.value = '';
+                    photoPreviewContainer.classList.add('hidden');
+                    alert('Selecione um arquivo de imagem válido.');
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    photoInput.value = '';
+                    photoPreviewContainer.classList.add('hidden');
+                    alert('A imagem deve possuir no máximo 5 MB.');
+                    return;
+                }
+
+                currentPreviewUrl = URL.createObjectURL(file);
+                photoPreview.src = currentPreviewUrl;
+                photoPreviewContainer.classList.remove('hidden');
+            });
+        });
+    </script>
+
 </x-app-layout>

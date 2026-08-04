@@ -63,7 +63,12 @@
                         );
                 "
             >
-                <form method="POST" action="{{ route('characters.store') }}" class="space-y-8">
+                <form
+                    method="POST"
+                    action="{{ route('characters.store') }}"
+                    enctype="multipart/form-data"
+                    class="space-y-8"
+                >
                     @csrf
 
                     @if ($errors->any())
@@ -95,12 +100,17 @@
                         </header>
 
                         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+
                             <div>
-                                <label class="block font-serif text-sm font-bold text-amber-950">
+                                <label
+                                    for="name"
+                                    class="block font-serif text-sm font-bold text-amber-950"
+                                >
                                     Nome do personagem
                                 </label>
 
                                 <input
+                                    id="name"
                                     type="text"
                                     name="name"
                                     value="{{ old('name') }}"
@@ -110,16 +120,62 @@
                             </div>
 
                             <div>
-                                <label class="block font-serif text-sm font-bold text-amber-950">
+                                <label
+                                    for="player_name"
+                                    class="block font-serif text-sm font-bold text-amber-950"
+                                >
                                     Nome do jogador
                                 </label>
 
                                 <input
+                                    id="player_name"
                                     type="text"
                                     name="player_name"
                                     value="{{ old('player_name') }}"
                                     class="mt-1 w-full rounded-lg border-amber-800/40 bg-amber-50/80 text-amber-950 shadow-inner focus:border-purple-800 focus:ring-purple-800"
                                 >
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label
+                                    for="photo"
+                                    class="block font-serif text-sm font-bold text-amber-950"
+                                >
+                                    Retrato do personagem
+                                </label>
+
+                                <input
+                                    id="photo"
+                                    type="file"
+                                    name="photo"
+                                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                    class="mt-1 block w-full rounded-lg border border-amber-800/40 bg-amber-50/80 px-3 py-2 text-sm text-amber-950 shadow-inner
+                                        file:mr-4 file:rounded-lg file:border-0 file:bg-purple-900 file:px-4 file:py-2
+                                        file:font-serif file:font-bold file:text-amber-200 hover:file:bg-purple-800"
+                                >
+
+                                <p class="mt-2 text-xs text-amber-900/65">
+                                    Formatos aceitos: JPG, JPEG, PNG ou WEBP. Tamanho máximo: 5 MB.
+                                </p>
+
+                                @error('photo')
+                                    <p class="mt-2 text-sm font-semibold text-red-800">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
+                                <div id="photo-preview-container" class="mt-4 hidden">
+                                    <p class="mb-2 font-serif text-sm font-bold text-amber-950">
+                                        Prévia do retrato
+                                    </p>
+
+                                    <img
+                                        id="photo-preview"
+                                        src=""
+                                        alt="Prévia do retrato do personagem"
+                                        class="h-64 w-48 rounded-xl border-4 border-amber-900/50 object-cover shadow-lg"
+                                    >
+                                </div>
                             </div>
 
                             <div>
@@ -918,6 +974,54 @@
                     input.checked
                 );
             });
+        });
+
+        const photoInput = document.getElementById('photo');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoPreviewContainer = document.getElementById(
+            'photo-preview-container'
+        );
+
+        let currentPreviewUrl = null;
+
+        photoInput?.addEventListener('change', event => {
+            const file = event.target.files?.[0];
+
+            if (currentPreviewUrl) {
+                URL.revokeObjectURL(currentPreviewUrl);
+                currentPreviewUrl = null;
+            }
+
+            if (!file || !photoPreview || !photoPreviewContainer) {
+                photoPreviewContainer?.classList.add('hidden');
+
+                if (photoPreview) {
+                    photoPreview.removeAttribute('src');
+                }
+
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                photoInput.value = '';
+                photoPreviewContainer.classList.add('hidden');
+                alert('Selecione um arquivo de imagem válido.');
+                return;
+            }
+
+            const maximumSize = 5 * 1024 * 1024;
+
+            if (file.size > maximumSize) {
+                photoInput.value = '';
+                photoPreviewContainer.classList.add('hidden');
+                alert('A imagem deve possuir no máximo 5 MB.');
+                return;
+            }
+
+            currentPreviewUrl = URL.createObjectURL(file);
+
+            photoPreview.src = currentPreviewUrl;
+            photoPreviewContainer.classList.remove('hidden');
         });
 
         updateCalculations();
