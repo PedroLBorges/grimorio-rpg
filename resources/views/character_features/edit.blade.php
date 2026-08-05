@@ -5,6 +5,7 @@
         <h2 class="font-serif font-bold text-2xl text-amber-950">
             Editar Registro - {{ $character->name }}
         </h2>
+        </div>
     </x-slot>
 
     <div class="py-8 min-h-screen"
@@ -15,7 +16,7 @@
             radial-gradient(circle at 35% 85%, rgba(70, 39, 18, 0.16), transparent 28%),
             linear-gradient(rgba(176, 138, 90, 0.95), rgba(139, 102, 62, 0.96));">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="rounded-xl border border-amber-700/30 bg-amber-100/85 shadow-lg p-6 text-amber-950">
+            <div class="rounded-2xl border-4 border-amber-900/60 bg-amber-100/90 p-6 text-amber-950 shadow-2xl sm:p-8">
 
                 <form method="POST" action="{{ route('characters.features.update', [$character, $feature]) }}" class="space-y-4">
                     @csrf
@@ -34,7 +35,7 @@
 
                     <div>
                         <label class="block font-medium">Tipo</label>
-                        <select name="type" class="w-full rounded border-gray-300" required>
+                        <select name="type" class="w-full rounded-lg border-amber-800/40 bg-amber-50/70 focus:border-purple-800 focus:ring-purple-800" required>
                             <option value="Habilidade" {{ old('type', $feature->type) === 'Habilidade' ? 'selected' : '' }}>
                                 Habilidade
                             </option>
@@ -47,23 +48,23 @@
                     <div>
                         <label class="block font-medium">Nome</label>
                         <input type="text" name="name" value="{{ old('name', $feature->name) }}"
-                               class="w-full rounded border-gray-300" required>
+                               class="w-full rounded-lg border-amber-800/40 bg-amber-50/70 focus:border-purple-800 focus:ring-purple-800" required>
                     </div>
 
                     <div>
                         <label class="block font-medium">Descrição</label>
                         <textarea name="description" rows="5"
-                                  class="w-full rounded border-gray-300">{{ old('description', $feature->description) }}</textarea>
+                                  class="w-full rounded-lg border-amber-800/40 bg-amber-50/70 focus:border-purple-800 focus:ring-purple-800">{{ old('description', $feature->description) }}</textarea>
                     </div>
 
                     <div class="flex gap-2">
                         <button type="submit"
-                                class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-950 px-4 py-2 font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-900"
+                                class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-950 px-4 py-2 font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-900">
                             Atualizar
                         </button>
 
                         <a href="{{ route('characters.features.index', $character) }}"
-                           class="rounded-lg border border-stone-600 bg-stone-300 px-4 py-2 font-semibold text-stone-900 hover:bg-stone-400"
+                           class="rounded-lg border border-stone-600 bg-stone-300 px-4 py-2 font-semibold text-stone-900 hover:bg-stone-400">
                             Cancelar
                         </a>
                     </div>

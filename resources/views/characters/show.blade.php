@@ -1,5 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
+        <div class="mb-5">
+            <a
+                href="{{ route('characters.index') }}"
+                class="inline-flex items-center rounded-lg border border-amber-500/70 bg-gradient-to-r from-purple-950 via-purple-800 to-indigo-950 px-5 py-3 font-serif font-bold text-amber-200 shadow-lg transition hover:from-purple-900 hover:via-purple-700 hover:to-indigo-900"
+            >
+                Voltar aos personagens
+            </a>
+        </div>
+
         <div class="rounded-xl border border-amber-700/40 bg-amber-100 shadow-md p-5"
             style="background-image: linear-gradient(rgba(255,248,220,.88), rgba(245,222,179,.9));">
 
@@ -257,12 +266,10 @@
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-lg font-semibold">Idiomas e outras proficiências</h3>
 
-                                @if ($character->canEdit(auth()->user()))
-                                    <a href="{{ route('characters.features.index', $character) }}"
+                                    <a href="{{ route('characters.language-proficiencies.index', $character) }}"
                                     class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-900 px-3 py-1 text-sm font-semibold text-yellow-200 shadow hover:from-amber-700 hover:to-amber-800">
-                                        Gerenciar
+                                        {{ $character->canEdit(auth()->user()) ? 'Gerenciar' : 'Ver registros' }}
                                     </a>
-                                @endif
                             </div>
 
                             @forelse($character->languageProficiencies as $record)
@@ -295,7 +302,7 @@
                         class="rounded-xl border border-amber-700/30 bg-amber-100/80 p-4 text-amber-950 shadow"
                     >
                         <div class="flex flex-col items-center">
-                            @if ($character->photo_path)
+                            @if ($hasPhoto)
                                 <img
                                     src="{{ asset('storage/' . $character->photo_path) }}"
                                     alt="Retrato de {{ $character->name }}"
@@ -560,12 +567,10 @@
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="text-lg font-semibold">Habilidades e Características</h3>
 
-                            @if ($character->canEdit(auth()->user()))
-                                <a href="{{ route('characters.language-proficiencies.index', $character) }}"
+                                <a href="{{ route('characters.features.index', $character) }}"
                                 class="rounded border border-amber-800 bg-amber-700 px-3 py-1 text-sm font-semibold text-white hover:bg-amber-800">
-                                    Gerenciar
+                                    {{ $character->canEdit(auth()->user()) ? 'Gerenciar' : 'Ver registros' }}
                                 </a>
-                            @endif
                         </div>
 
                         @forelse($character->features as $feature)

@@ -17,7 +17,7 @@
     <form
         method="POST"
         action="{{ route('login') }}"
-        class="space-y-5"
+        class="w-full space-y-5"
         id="login-form"
     >
         @csrf

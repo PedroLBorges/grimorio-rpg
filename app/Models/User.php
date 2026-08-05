@@ -50,4 +50,9 @@ class User extends Authenticatable
             ->withPivot('permission')
             ->withTimestamps();
     }
+
+    public function sessionNotes(): HasMany
+    {
+        return $this->hasMany(SessionNote::class);
+    }
 }

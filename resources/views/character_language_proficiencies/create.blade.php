@@ -1,67 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Novo Registro - {{ $character->name }}
-        </h2>
-    </x-slot>
-
-    <div class="py-8">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-
-                <form method="POST" action="{{ route('characters.language-proficiencies.store', $character) }}" class="space-y-4">
-                    @csrf
-
-                    @if ($errors->any())
-                        <div class="mb-4 rounded bg-red-100 p-4 text-red-800">
-                            <strong>Há erros no formulário:</strong>
-                            <ul class="mt-2 list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <div>
-                        <label class="block font-medium">Tipo</label>
-                        <select name="type" class="w-full rounded border-gray-300" required>
-                            <option value="">Selecione</option>
-                            <option value="Idioma" {{ old('type') === 'Idioma' ? 'selected' : '' }}>
-                                Idioma
-                            </option>
-                            <option value="Proficiência" {{ old('type') === 'Proficiência' ? 'selected' : '' }}>
-                                Proficiência
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block font-medium">Nome</label>
-                        <input type="text" name="name" value="{{ old('name') }}"
-                               class="w-full rounded border-gray-300" required>
-                    </div>
-
-                    <div>
-                        <label class="block font-medium">Descrição</label>
-                        <textarea name="description" rows="5"
-                                  class="w-full rounded border-gray-300">{{ old('description') }}</textarea>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button type="submit"
-                                class="rounded bg-amber-700 px-4 py-2 text-white hover:bg-amber-800">
-                            Salvar
-                        </button>
-
-                        <a href="{{ route('characters.language-proficiencies.index', $character) }}"
-                           class="rounded bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400">
-                            Cancelar
-                        </a>
-                    </div>
-
-                </form>
-            </div>
-        </div>
-    </div>
+    <x-slot name="header"><div class="rounded-xl border border-amber-700/40 bg-amber-100 p-4 shadow-md"><h2 class="font-serif text-2xl font-bold text-amber-950">Novo idioma ou proficiência - {{ $character->name }}</h2></div></x-slot>
+    <div class="min-h-screen bg-gradient-to-b from-[#b08a5a] to-[#6b4423] py-8"><div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8"><div class="rounded-2xl border-4 border-amber-900/60 bg-amber-100/90 p-6 text-amber-950 shadow-2xl sm:p-8">
+        <form method="POST" action="{{ route('characters.language-proficiencies.store', $character) }}" class="space-y-4">@csrf
+            @if ($errors->any())<div class="rounded-lg border border-red-800/30 bg-red-100 p-4 text-red-900"><strong>Há erros no formulário:</strong><ul class="mt-2 list-inside list-disc">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+            <div><label class="block font-serif font-bold">Tipo</label><select name="type" required class="mt-1 w-full rounded-lg border-amber-800/40 bg-amber-50/70 focus:border-purple-800 focus:ring-purple-800"><option value="">Selecione</option><option value="Idioma" @selected(old('type') === 'Idioma')>Idioma</option><option value="Proficiência" @selected(old('type') === 'Proficiência')>Proficiência</option></select></div>
+            <div><label class="block font-serif font-bold">Nome</label><input type="text" name="name" value="{{ old('name') }}" required class="mt-1 w-full rounded-lg border-amber-800/40 bg-amber-50/70 focus:border-purple-800 focus:ring-purple-800"></div>
+            <div><label class="block font-serif font-bold">Descrição</label><textarea name="description" rows="5" class="mt-1 w-full rounded-lg border-amber-800/40 bg-amber-50/70 focus:border-purple-800 focus:ring-purple-800">{{ old('description') }}</textarea></div>
+            <div class="flex gap-2"><button class="rounded-lg border border-amber-900 bg-gradient-to-r from-amber-800 to-amber-950 px-4 py-2 font-semibold text-yellow-200">Salvar</button><a href="{{ route('characters.language-proficiencies.index', $character) }}" class="rounded-lg border border-stone-600 bg-stone-300 px-4 py-2 font-semibold text-stone-900">Cancelar</a></div>
+        </form>
+    </div></div></div>
 </x-app-layout>

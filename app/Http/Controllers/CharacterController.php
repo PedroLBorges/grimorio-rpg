@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Character;
+use App\Services\CharacterPhotoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Throwable;
 use Illuminate\View\View;
 
 class CharacterController extends Controller
 {
+    public function __construct(private readonly CharacterPhotoService $photos) {}
     /**
      * Lista os personagens próprios e os compartilhados com o usuário.
      */
@@ -101,8 +103,6 @@ class CharacterController extends Controller
             'charisma_save_proficient' => 'nullable|boolean',
 
             'armor_class' => 'required|integer|min:1|max:40',
-            'has_inspiration' => 'nullable|boolean',
-            'languages_and_proficiencies' => 'nullable|string',
             'personality_traits' => 'nullable|string',
             'ideals' => 'nullable|string',
             'bonds' => 'nullable|string',
@@ -113,9 +113,7 @@ class CharacterController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $validated['photo_path'] = $request
-                ->file('photo')
-                ->store('character-photos', 'public');
+            $validated['photo_path'] = $this->photos->store($request->file('photo'));
         }
 
         unset($validated['photo']);
@@ -163,10 +161,6 @@ class CharacterController extends Controller
             $validated[$field] = $request->boolean($field);
         }
 
-        $validated['has_inspiration'] = $request->boolean(
-            'has_inspiration'
-        );
-
         $validated['experience'] = $validated['experience'] ?? 0;
         $validated['speed'] = $validated['speed'] ?? 30;
 
@@ -176,9 +170,12 @@ class CharacterController extends Controller
         $validated['gp'] = $validated['gp'] ?? 0;
         $validated['pp'] = $validated['pp'] ?? 0;
 
-        $request->user()
-            ->characters()
-            ->create($validated);
+        try {
+            $request->user()->characters()->create($validated);
+        } catch (Throwable $exception) {
+            $this->photos->delete($validated['photo_path'] ?? null);
+            throw $exception;
+        }
 
         return redirect()
             ->route('characters.index')
@@ -204,7 +201,8 @@ class CharacterController extends Controller
             'shares.user',
         ]);
 
-        return view('characters.show', compact('character'));
+        $hasPhoto = $this->photos->exists($character->photo_path);
+        return view('characters.show', compact('character', 'hasPhoto'));
     }
 
     /**
@@ -219,7 +217,8 @@ class CharacterController extends Controller
             403
         );
 
-        return view('characters.edit', compact('character'));
+        $hasPhoto = $this->photos->exists($character->photo_path);
+        return view('characters.edit', compact('character', 'hasPhoto'));
     }
 
     /**
@@ -291,8 +290,6 @@ class CharacterController extends Controller
             'charisma_save_proficient' => 'nullable|boolean',
 
             'armor_class' => 'required|integer|min:1|max:40',
-            'has_inspiration' => 'nullable|boolean',
-            'languages_and_proficiencies' => 'nullable|string',
             'personality_traits' => 'nullable|string',
             'ideals' => 'nullable|string',
             'bonds' => 'nullable|string',
@@ -337,32 +334,32 @@ class CharacterController extends Controller
             $validated[$field] = $request->boolean($field);
         }
 
-        $validated['has_inspiration'] = $request->boolean(
-            'has_inspiration'
-        );
-
         $validated['hp_current'] = min(
             $validated['hp_current'],
             $validated['hp_max']
         );
 
-        if ($request->hasFile('photo')) {
-            $newPhotoPath = $request
-                ->file('photo')
-                ->store('character-photos', 'public');
+        $oldPhotoPath = $character->photo_path;
+        $newPhotoPath = $request->hasFile('photo')
+            ? $this->photos->store($request->file('photo'))
+            : null;
 
-            if ($character->photo_path) {
-                Storage::disk('public')->delete(
-                    $character->photo_path
-                );
-            }
-
+        if ($newPhotoPath) {
             $validated['photo_path'] = $newPhotoPath;
         }
 
         unset($validated['photo']);
 
-        $character->update($validated);
+        try {
+            $character->update($validated);
+        } catch (Throwable $exception) {
+            $this->photos->delete($newPhotoPath);
+            throw $exception;
+        }
+
+        if ($newPhotoPath) {
+            $this->photos->delete($oldPhotoPath);
+        }
 
         return redirect()
             ->route('characters.show', $character)
@@ -381,13 +378,9 @@ class CharacterController extends Controller
             403
         );
 
-        if ($character->photo_path) {
-            Storage::disk('public')->delete(
-                $character->photo_path
-            );
-        }
-
+        $photoPath = $character->photo_path;
         $character->delete();
+        $this->photos->delete($photoPath);
 
         return redirect()
             ->route('characters.index')

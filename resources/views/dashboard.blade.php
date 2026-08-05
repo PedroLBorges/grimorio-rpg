@@ -85,11 +85,7 @@
                     <!-- Página esquerda -->
                     <section class="border-b border-amber-900/20 p-7 lg:border-b-0 lg:border-r">
                         <div class="mb-6 text-center">
-                            <p class="font-serif text-xs uppercase tracking-[0.3em] text-amber-800">
-                                Capítulo I
-                            </p>
-
-                            <h3 class="mt-1 font-serif text-2xl font-bold text-amber-950">
+                            <h3 class="font-serif text-2xl font-bold text-amber-950">
                                 Personagens
                             </h3>
 
@@ -154,11 +150,7 @@
                     <!-- Página direita -->
                     <section class="p-7">
                         <div class="mb-6 text-center">
-                            <p class="font-serif text-xs uppercase tracking-[0.3em] text-amber-800">
-                                Capítulo II
-                            </p>
-
-                            <h3 class="mt-1 font-serif text-2xl font-bold text-amber-950">
+                            <h3 class="font-serif text-2xl font-bold text-amber-950">
                                 Conta e navegação
                             </h3>
 
@@ -186,16 +178,16 @@
                             </a>
 
                             <a
-                                href="{{ route('characters.index') }}"
+                                href="{{ route('session-notes.index') }}"
                                 class="group flex items-center justify-between rounded-lg border border-amber-800/30 bg-amber-50/50 px-4 py-4 transition hover:border-amber-800/60 hover:bg-amber-100"
                             >
                                 <div>
                                     <p class="font-serif text-lg font-bold text-amber-950">
-                                        Retomar uma jornada
+                                        Diário de sessão
                                     </p>
 
                                     <p class="mt-1 text-sm text-amber-900/70">
-                                        Volte rapidamente à sua coleção de fichas.
+                                        Registre e consulte as memórias de cada aventura.
                                     </p>
                                 </div>
 
@@ -204,28 +196,6 @@
                                 </span>
                             </a>
 
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-
-                                <button
-                                    type="submit"
-                                    class="group flex w-full items-center justify-between rounded-lg border border-purple-900/40 bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 px-4 py-4 text-left text-amber-100 shadow transition hover:from-purple-900 hover:via-purple-800 hover:to-indigo-900"
-                                >
-                                    <div>
-                                        <p class="font-serif text-lg font-bold">
-                                            Fechar o Grimório
-                                        </p>
-
-                                        <p class="mt-1 text-sm text-purple-100/75">
-                                            Encerrar a sessão com segurança.
-                                        </p>
-                                    </div>
-
-                                    <span class="ml-4 font-serif text-xl text-amber-300 transition group-hover:translate-x-1">
-                                        05
-                                    </span>
-                                </button>
-                            </form>
                         </nav>
 
                         <blockquote class="mt-8 border-l-4 border-amber-800/50 pl-4 font-serif italic text-amber-950/75">

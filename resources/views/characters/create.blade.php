@@ -289,21 +289,6 @@
                                 >
                             </div>
 
-                            <div>
-                                <label class="flex h-full items-center gap-3 rounded-lg border border-amber-800/30 bg-amber-100/65 p-4 text-amber-950">
-                                    <input
-                                        type="checkbox"
-                                        name="has_inspiration"
-                                        value="1"
-                                        {{ old('has_inspiration') ? 'checked' : '' }}
-                                        class="rounded border-amber-700 bg-amber-50 text-purple-800 focus:ring-purple-700"
-                                    >
-
-                                    <span class="font-serif font-bold">
-                                        Personagem possui inspiração
-                                    </span>
-                                </label>
-                            </div>
                         </div>
                     </section>
 
@@ -649,18 +634,6 @@
                                     class="mt-1 w-full rounded-lg border-amber-800/40 bg-amber-50/80 text-amber-950 shadow-inner focus:border-purple-800 focus:ring-purple-800"
                                 >{{ old('flaws') }}</textarea>
                             </div>
-                        </div>
-
-                        <div class="mt-5">
-                            <label class="block font-serif text-sm font-bold text-amber-950">
-                                Idiomas e outras proficiências
-                            </label>
-
-                            <textarea
-                                name="languages_and_proficiencies"
-                                rows="4"
-                                class="mt-1 w-full rounded-lg border-amber-800/40 bg-amber-50/80 text-amber-950 shadow-inner focus:border-purple-800 focus:ring-purple-800"
-                            >{{ old('languages_and_proficiencies') }}</textarea>
                         </div>
 
                         <div class="mt-5">

@@ -92,3 +92,31 @@ it('keeps character deletion and share management exclusive to the owner', funct
         ->get(route('characters.sharing.show', $this->character))
         ->assertForbidden();
 });
+
+it('transfers ownership while preserving other shares and removing the old owner access', function () {
+    $otherViewer = User::factory()->create();
+    $this->character->shares()->create([
+        'user_id' => $otherViewer->id,
+        'permission' => 'view',
+    ]);
+
+    $this->actingAs($this->owner)->post(
+        route('characters.sharing.store', $this->character),
+        ['email' => $this->editor->email, 'permission' => 'transfer']
+    )->assertRedirect(route('characters.index'));
+
+    $this->character->refresh();
+    expect($this->character->isOwner($this->editor))->toBeTrue()
+        ->and($this->character->canView($this->owner))->toBeFalse()
+        ->and($this->character->canView($otherViewer))->toBeTrue();
+});
+
+it('blocks non owners from transferring ownership', function () {
+    $recipient = User::factory()->create();
+    $this->actingAs($this->editor)->post(
+        route('characters.sharing.store', $this->character),
+        ['email' => $recipient->email, 'permission' => 'transfer']
+    )->assertForbidden();
+
+    expect($this->character->fresh()->isOwner($this->owner))->toBeTrue();
+});

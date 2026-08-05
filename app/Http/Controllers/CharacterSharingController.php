@@ -55,7 +55,7 @@ class CharacterSharingController extends Controller
 
             'permission' => [
                 'required',
-                'in:view,edit',
+                'in:view,edit,transfer',
             ],
         ], [
             'email.required' => 'Informe o e-mail do usuário.',
@@ -76,6 +76,14 @@ class CharacterSharingController extends Controller
                 ->withErrors([
                     'email' => 'Você não pode compartilhar a ficha consigo mesmo.',
                 ]);
+        }
+
+        if ($validated['permission'] === 'transfer') {
+            $character->transferOwnershipTo($sharedUser);
+
+            return redirect()
+                ->route('characters.index')
+                ->with('success', "A propriedade da ficha foi transferida para {$sharedUser->name}.");
         }
 
         $alreadyShared = $character->shares()

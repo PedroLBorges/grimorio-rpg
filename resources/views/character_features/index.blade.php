@@ -5,6 +5,7 @@
         <h2 class="font-serif font-bold text-2xl text-amber-950">
             Habilidades e Características - {{ $character->name }}
         </h2>
+        </div>
     </x-slot>
 
     <div class="py-8 min-h-screen"
@@ -17,7 +18,7 @@
             <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
 
             @if(session('success'))
-                <div class="mb-4 rounded bg-green-100 p-4 text-green-800">
+                <div class="mb-5 rounded-lg border border-green-800/30 bg-green-100 p-4 text-green-900 shadow">
                     {{ session('success') }}
                 </div>
             @endif
@@ -36,7 +37,7 @@
                 </a>
             </div>
 
-            <div class="rounded-xl border border-amber-700/30 bg-amber-100/85 shadow-lg p-6 text-amber-950">
+            <div class="rounded-2xl border-4 border-amber-900/60 bg-amber-100/90 p-6 text-amber-950 shadow-2xl">
 
                 @forelse($features as $feature)
                     <div class="mb-3 rounded-lg border-l-4 border-amber-800 bg-amber-50/60 p-4 shadow-sm flex justify-between gap-4">

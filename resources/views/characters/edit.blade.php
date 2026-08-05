@@ -43,7 +43,7 @@
 
                         <div class="mt-2 flex flex-col gap-5 sm:flex-row sm:items-start">
                             <div>
-                                @if ($character->photo_path)
+                                @if ($hasPhoto)
                                     <img
                                         id="current-photo"
                                         src="{{ asset('storage/' . $character->photo_path) }}"
@@ -208,18 +208,6 @@
                 <div>
                     <label class="block font-medium">Classe de Armadura (CA)</label>
                     <input type="number" name="armor_class" value="{{ old('armor_class', $character->armor_class) }}" min="1" max="40" class="w-full rounded border-gray-300" required>
-                </div>
-
-                <div>
-                    <label class="flex items-center gap-3 rounded border p-3">
-                        <input type="checkbox" name="has_inspiration" value="1" {{ old('has_inspiration', $character->has_inspiration) ? 'checked' : '' }}>
-                        <span>Personagem possui inspiração</span>
-                    </label>
-                </div>
-
-                <div>
-                    <label class="block font-medium">Idiomas e outras proficiências</label>
-                    <textarea name="languages_and_proficiencies" rows="4" class="w-full rounded border-gray-300">{{ old('languages_and_proficiencies', $character->languages_and_proficiencies) }}</textarea>
                 </div>
 
                 <div>

@@ -56,15 +56,13 @@
                         <span class="absolute bottom-2 right-3 font-serif text-2xl text-amber-300">✦</span>
 
                         <!-- Título do sistema -->
-                        <div class="mb-4 flex justify-center">
+                        <div class="mb-6 text-center">
 
                             <img
                                 src="{{ asset('images/grimorio-logo.png') }}"
                                 alt="Grimório RPG"
                                 class="h-24 w-24 object-contain drop-shadow-2xl"
                             >
-
-                        </div>
 
                             <a href="/" class="inline-block">
                                 <h1

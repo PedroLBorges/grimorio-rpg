@@ -10,6 +10,7 @@ use App\Http\Controllers\CharacterFeatureController;
 use App\Http\Controllers\CharacterLanguageProficiencyController;
 use App\Http\Controllers\CharacterAppearanceController;
 use App\Http\Controllers\CharacterSharingController;
+use App\Http\Controllers\SessionNoteController;
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('characters', CharacterController::class);
@@ -24,6 +25,9 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::resource('session-notes', SessionNoteController::class)
+        ->parameters(['session-notes' => 'sessionNote'])
+        ->except('show');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

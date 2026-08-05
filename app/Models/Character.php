@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 
 class Character extends Model
@@ -252,6 +253,26 @@ class Character extends Model
     public function appearance()
     {
         return $this->hasOne(CharacterAppearance::class);
+    }
+
+    public function sessionNotes(): HasMany
+    {
+        return $this->hasMany(SessionNote::class);
+    }
+
+    public function transferOwnershipTo(User $newOwner): void
+    {
+        if ($this->isOwner($newOwner)) {
+            return;
+        }
+
+        DB::transaction(function () use ($newOwner): void {
+            $character = self::query()->lockForUpdate()->findOrFail($this->id);
+            $oldOwnerId = $character->user_id;
+            $character->shares()->whereIn('user_id', [$newOwner->id, $oldOwnerId])->delete();
+            $character->update(['user_id' => $newOwner->id]);
+            $this->setRawAttributes($character->getAttributes(), true);
+        });
     }
 
     public function shares(): HasMany

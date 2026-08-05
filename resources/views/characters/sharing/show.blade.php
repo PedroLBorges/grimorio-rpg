@@ -157,6 +157,20 @@
                                         </span>
                                     </label>
 
+                                    <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-red-900/30 bg-red-100/45 p-4 transition hover:bg-red-100/70">
+                                        <input
+                                            type="radio"
+                                            name="permission"
+                                            value="transfer"
+                                            {{ old('permission') === 'transfer' ? 'checked' : '' }}
+                                            class="mt-1 border-red-800 bg-amber-50 text-red-900 focus:ring-red-800"
+                                        >
+                                        <span>
+                                            <span class="block font-serif font-bold text-red-950">Transferir propriedade</span>
+                                            <span class="mt-1 block text-sm text-red-900/75">O destinatário se tornará proprietário e você perderá o acesso à ficha. Os demais compartilhamentos serão mantidos.</span>
+                                        </span>
+                                    </label>
+
                                     <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-amber-800/30 bg-amber-100/55 p-4 transition hover:bg-amber-200/60">
                                         <input
                                             type="radio"

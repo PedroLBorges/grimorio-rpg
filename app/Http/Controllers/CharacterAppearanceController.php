@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Character;
+use App\Services\CharacterPhotoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CharacterAppearanceController extends Controller
 {
+    public function __construct(private readonly CharacterPhotoService $photos) {}
     /**
      * Exibe a aparência para proprietário, editor ou visualizador.
      */
@@ -22,10 +24,11 @@ class CharacterAppearanceController extends Controller
         );
 
         $appearance = $character->appearance;
+        $hasPhoto = $this->photos->exists($character->photo_path);
 
         return view(
             'character_appearance.show',
-            compact('character', 'appearance')
+            compact('character', 'appearance', 'hasPhoto')
         );
     }
 
@@ -42,10 +45,11 @@ class CharacterAppearanceController extends Controller
         );
 
         $appearance = $character->appearance;
+        $hasPhoto = $this->photos->exists($character->photo_path);
 
         return view(
             'character_appearance.edit',
-            compact('character', 'appearance')
+            compact('character', 'appearance', 'hasPhoto')
         );
     }
 

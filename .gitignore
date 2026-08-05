@@ -2,6 +2,7 @@
 /node_modules
 /public/build
 /public/hot
+/tmp/
 /storage/*.key
 /storage/app/public
 .env

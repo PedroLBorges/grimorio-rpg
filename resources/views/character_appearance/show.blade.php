@@ -85,7 +85,7 @@
                     <!-- Retrato -->
                     <aside>
                         <div class="rounded-xl border border-amber-800/30 bg-amber-50/45 p-4 shadow-sm">
-                            @if ($character->photo_path)
+                            @if ($hasPhoto)
                                 <img
                                     src="{{ asset('storage/' . $character->photo_path) }}"
                                     alt="Retrato de {{ $character->name }}"

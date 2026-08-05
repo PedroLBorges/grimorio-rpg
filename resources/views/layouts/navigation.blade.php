@@ -24,7 +24,7 @@
                     type="submit"
                     class="rounded-lg border border-amber-400/60 bg-purple-800 px-4 py-2 font-serif text-sm font-bold text-amber-200 shadow transition hover:bg-purple-700"
                 >
-                    Sair
+                    Logout
                 </button>
             </form>
 
